@@ -165,9 +165,8 @@ func (n *node) run() {
 
 		log.Println(n.name, ":starting node")
 
-		nextTick := time.Now().Add(time.Second * CycleDuration).Round(time.Second * 5)
-		diff := nextTick.Sub(time.Now())
-		n.ticker.Reset(diff + time.Second*CycleDuration)
+		// Start this on the 5 second marks.
+		n.resetTicker(5)
 
 		for {
 
@@ -192,11 +191,17 @@ func (n *node) run() {
 				return
 			}
 
-			nextTick := time.Now().Add(time.Second * CycleDuration).Round(time.Second)
-			diff := nextTick.Sub(time.Now())
-			n.ticker.Reset(diff)
+			n.resetTicker(0)
 		}
 	}()
+}
+
+const cycleDuration = 5
+
+func (n *node) resetTicker(onSecond time.Duration) {
+	nextTick := time.Now().Add(time.Second * cycleDuration).Round(time.Second * onSecond)
+	diff := nextTick.Sub(time.Now())
+	n.ticker.Reset(diff + time.Second*cycleDuration)
 }
 
 // shutdown terminates the node from existence.
