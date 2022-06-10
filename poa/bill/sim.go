@@ -39,11 +39,10 @@ func run(name string) *node {
 			case <-n.ticker.C:
 				n.performWork()
 			case <-n.shut:
-				log.Println(n.name, ":shutting down node")
+				log.Println(n.name, ":node shutting down")
 				return
 			}
 		}
-
 	}()
 
 	return &n
@@ -51,12 +50,8 @@ func run(name string) *node {
 
 // shutdown terminates the node from existence.
 func (n *node) shutdown() {
-	log.Println(n.name, ":shutdown started")
-	{
-		close(n.shut)
-		n.wg.Wait()
-	}
-	log.Println(n.name, ":shutdown complete")
+	close(n.shut)
+	n.wg.Wait()
 }
 
 // performWork represents the work to perform on each 12 second cycle.
