@@ -165,9 +165,11 @@ func (n *node) run() {
 
 		log.Println(n.name, ":starting node")
 
-		for {
+		nextTick := time.Now().Add(time.Second * CycleDuration).Round(time.Second * 5)
+		diff := nextTick.Sub(time.Now())
+		n.ticker.Reset(diff + time.Second*CycleDuration)
 
-			start := time.Now()
+		for {
 
 			select {
 			case <-n.ticker.C:
@@ -190,9 +192,9 @@ func (n *node) run() {
 				return
 			}
 
-			dur := time.Since(start)
-			additionalWait := (CycleDuration * time.Second) - dur
-			time.Sleep(additionalWait)
+			nextTick := time.Now().Add(time.Second * CycleDuration).Round(time.Second)
+			diff := nextTick.Sub(time.Now())
+			n.ticker.Reset(diff)
 		}
 	}()
 }
