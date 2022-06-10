@@ -124,7 +124,7 @@ type node struct {
 func newNode(name string, originNode *node) *node {
 	n := node{
 		name:         name,
-		ticker:       time.NewTicker(2 * time.Second),
+		ticker:       time.NewTicker(5 * time.Second),
 		shut:         make(chan struct{}),
 		sendBlock:    make(chan block, 10),
 		registerNode: make(chan *node),
@@ -248,12 +248,12 @@ func newSimulation() *simulation {
 	nodeA := newNode("nodeA", nil)
 	nodeA.run()
 
-	time.Sleep(5 * time.Second)
+	time.Sleep(2 * time.Second)
 
 	nodeB := newNode("nodeB", nodeA)
 	nodeB.run()
 
-	time.Sleep(5 * time.Second)
+	time.Sleep(2 * time.Second)
 
 	nodeC := newNode("nodeC", nodeA)
 	nodeC.run()
