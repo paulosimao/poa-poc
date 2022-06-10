@@ -1,24 +1,57 @@
 package main
 
 import (
+	"crypto/sha256"
+	"encoding/json"
 	"log"
 	"math/rand"
 	"sort"
 	"sync"
 	"time"
+
+	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 // block represents a block of data that is mined.
-type block struct{}
+type block struct {
+	Number        uint64
+	PrevBlockHash string
+	TimeStamp     uint64
+}
+
+// newBlock constructs a block from the previous block.
+func newBlock(prevBlock block) block {
+	return block{
+		Number:        prevBlock.Number + 1,
+		PrevBlockHash: prevBlock.PrevBlockHash,
+		TimeStamp:     uint64(time.Now().UTC().UnixMilli()),
+	}
+}
+
+// hash generates the hash for this block.
+func (b block) hash() string {
+	const ZeroHash string = "0x0000000000000000000000000000000000000000000000000000000000000000"
+
+	data, err := json.Marshal(b)
+	if err != nil {
+		return ZeroHash
+	}
+
+	hash := sha256.Sum256(data)
+	return hexutil.Encode(hash[:])
+}
+
+// =============================================================================
 
 // node represents a node running as a process.
 type node struct {
-	name     string
-	wg       sync.WaitGroup
-	ticker   *time.Ticker
-	shut     chan struct{}
-	send     chan block
-	registry map[string]*node
+	name        string
+	wg          sync.WaitGroup
+	ticker      *time.Ticker
+	shut        chan struct{}
+	send        chan block
+	registry    map[string]*node
+	latestBlock block
 }
 
 // newNode gets the node up and running.
