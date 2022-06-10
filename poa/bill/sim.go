@@ -4,7 +4,6 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"log"
-	"math/rand"
 	"sort"
 	"sync"
 	"time"
@@ -23,7 +22,7 @@ type block struct {
 func newBlock(prevBlock block) block {
 	return block{
 		Number:        prevBlock.Number + 1,
-		PrevBlockHash: prevBlock.PrevBlockHash,
+		PrevBlockHash: prevBlock.hash(),
 		TimeStamp:     uint64(time.Now().UTC().UnixMilli()),
 	}
 }
@@ -80,6 +79,9 @@ func (n *node) run(registry map[string]*node) {
 			select {
 			case <-n.ticker.C:
 				n.performWork()
+			case b := <-n.send:
+				log.Println(n.name, ":node received block", b.hash())
+				n.latestBlock = b
 			case <-n.shut:
 				log.Println(n.name, ":node shutting down")
 				return
@@ -100,14 +102,13 @@ func (n *node) performWork() {
 	switch selectedNode {
 	case n.name:
 		log.Println(n.name, ":SELECTED")
+		n.mineNewBlock()
 	default:
 	}
 }
 
 // selection selects an index from 0 to 2.
 func (n *node) selection() string {
-
-	// HOW DO WE MAKE THIS DETERMINISTIC!!!!
 
 	// Sort the current list of registered nodes.
 	nodes := make([]string, 0, len(n.registry))
@@ -116,8 +117,24 @@ func (n *node) selection() string {
 	}
 	sort.Strings(nodes)
 
+	// HOW DO WE MAKE THIS DETERMINISTIC!!!!
+	// FOR NOW JUST USE INDEX 0
+
 	// Return the name of the node selected.
-	return nodes[rand.Intn(len(nodes))]
+	return nodes[0]
+}
+
+// mineNewBlock creates a new block and sends that to the p2p network.
+func (n *node) mineNewBlock() {
+	b := newBlock(n.latestBlock)
+	n.latestBlock = b
+
+	// Send block to all other nodes in the registry.
+	for k := range n.registry {
+		if k != n.name {
+			n.send <- b
+		}
+	}
 }
 
 // =============================================================================
