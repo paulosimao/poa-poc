@@ -12,7 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
-const CycleDuration = 5
+const cycleDuration = 5 * time.Second
 
 // block represents a block of data that is mined.
 type block struct {
@@ -126,7 +126,7 @@ type node struct {
 func newNode(name string, originNode *node) *node {
 	n := node{
 		name:         name,
-		ticker:       time.NewTicker(CycleDuration * time.Second),
+		ticker:       time.NewTicker(cycleDuration),
 		shut:         make(chan struct{}),
 		sendBlock:    make(chan block, 10),
 		registerNode: make(chan *node),
@@ -166,7 +166,7 @@ func (n *node) run() {
 		log.Println(n.name, ":starting node")
 
 		// Start this on the 5 second marks.
-		n.resetTicker(5)
+		n.resetTicker(5 * time.Second)
 
 		for {
 
@@ -196,12 +196,10 @@ func (n *node) run() {
 	}()
 }
 
-const cycleDuration = 5
-
 func (n *node) resetTicker(onSecond time.Duration) {
-	nextTick := time.Now().Add(time.Second * cycleDuration).Round(time.Second * onSecond)
-	diff := nextTick.Sub(time.Now())
-	n.ticker.Reset(diff + time.Second*cycleDuration)
+	nextTick := time.Now().Add(cycleDuration).Round(onSecond)
+	diff := time.Until(nextTick)
+	n.ticker.Reset(diff)
 }
 
 // shutdown terminates the node from existence.
