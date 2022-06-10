@@ -49,6 +49,8 @@ func Origin() *Node {
 	return nodes[ORIGIN]
 }
 
+// =============================================================================
+
 // Node represents the node struct.
 type Node struct {
 	keepRunning bool

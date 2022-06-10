@@ -7,12 +7,11 @@ import (
 )
 
 func TestNodes(t *testing.T) {
-	var nodes []*poa.Node
+	//var nodes []*poa.Node
 	for i := 0; i < 10; i++ {
-		n := &poa.Node{}
+		var n poa.Node
 		n.Start()
-		nodes = append(nodes, n)
+		//nodes = append(nodes, n)
 	}
 	time.Sleep(poa.CycleDuration * 5 * time.Hour)
-
 }
