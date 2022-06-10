@@ -130,9 +130,9 @@ func (n *node) mineNewBlock() {
 	n.latestBlock = b
 
 	// Send block to all other nodes in the registry.
-	for k := range n.registry {
+	for k, node := range n.registry {
 		if k != n.name {
-			n.send <- b
+			node.send <- b
 		}
 	}
 }
