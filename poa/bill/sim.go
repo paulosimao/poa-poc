@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/sha256"
 	"encoding/json"
+	"hash/fnv"
 	"log"
 	"sort"
 	"sync"
@@ -117,11 +118,15 @@ func (n *node) selection() string {
 	}
 	sort.Strings(nodes)
 
-	// HOW DO WE MAKE THIS DETERMINISTIC!!!!
-	// FOR NOW JUST USE INDEX 0
+	// Based on the latest block, pick an index number from
+	// the registry.
+	h := fnv.New32a()
+	h.Write([]byte(n.latestBlock.hash()))
+	integerHash := h.Sum32()
+	i := integerHash % uint32(len(n.registry))
 
 	// Return the name of the node selected.
-	return nodes[0]
+	return nodes[i]
 }
 
 // mineNewBlock creates a new block and sends that to the p2p network.
