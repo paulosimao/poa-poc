@@ -196,6 +196,8 @@ func (n *node) shutdown() {
 
 // performWork represents the work to perform on each 12 second cycle.
 func (n *node) performWork() {
+	log.Println(n.name, "******************* CYCLE *******************")
+
 	selectedNode := n.selection()
 	switch selectedNode {
 	case n.name:
